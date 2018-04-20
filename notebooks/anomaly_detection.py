@@ -205,21 +205,22 @@ def trend(dow, intersection, direction, int_leg, new_dataframe):
     upper_bound = pct[1] + (iqrange * 1.5)
     
     
-    # Plot Data With Bounds and data cutoff
-    plt.figure(figsize = (18,10))
-    plt.plot(trendvalues, linewidth = 2, color = 'blue', alpha = 0.7, label = 'Trend Volume')
-    plt.axvline(x=(56*intervals)-1, c = '#FF00FF', linewidth = 4, alpha = 0.7, linestyle = '--', label = 'New Data Cutoff')
-    plt.axhline(lower_bound, alpha = 0.5, color = 'c')
-    plt.axhline(upper_bound,  alpha = 0.5, color = 'c')
-    plt.axhspan(lower_bound, upper_bound, alpha = 0.1, facecolor = 'c', label = 'Trend Bounds')
-    plt.title("%s Trendline with New Data" % (intersection))
-    plt.ylabel("Volume Trend")
-    plt.legend()
+    if False in list(lower_bound <= trendvalues[len(data)]) or False in list(upper_bound >= trendvalues[len(data)]):
+        # Plot Data With Bounds and data cutoff
+        plt.figure(figsize = (18,10))
+        plt.plot(trendvalues, linewidth = 2, color = 'blue', alpha = 0.7, label = 'Trend Volume')
+        plt.axvline(x=(56*intervals)-1, c = '#FF00FF', linewidth = 4, alpha = 0.7, linestyle = '--', label = 'New Data Cutoff')
+        plt.axhline(lower_bound, alpha = 0.5, color = 'c')
+        plt.axhline(upper_bound,  alpha = 0.5, color = 'c')
+        plt.axhspan(lower_bound, upper_bound, alpha = 0.1, facecolor = 'c', label = 'Trend Bounds')
+        plt.title("%s Trendline with New Data" % (intersection))
+        plt.ylabel("Volume Trend")
+        plt.legend()
 
 
 # run the script over all distinct combos 
 
-for i in range(3): 
+for i in range(1): 
     strSQL = '''SELECT extract(dow from datetime_bin) as dow
                 FROM miovision.volumes_15min_new
                 LIMIT 1'''
