@@ -5,10 +5,6 @@ import configparser
 from psycopg2 import connect
 import psycopg2.sql as pg
 import pandas.io.sql as pandasql
-from sqlalchemy import create_engine
-import io
-import datetime 
-import numpy 
 import matplotlib.pyplot as plt
 from scipy.stats import iqr
 from numpy import percentile
@@ -24,6 +20,7 @@ import rpy2.robjects as robjects
 from rpy2.robjects.packages import importr
 ts=robjects.r('ts')
 append = robjects.r('append')
+ro.r('install.packages("forecast")')
 forecast=importr('forecast')
 from rpy2.robjects import pandas2ri
 pandas2ri.activate()
@@ -106,6 +103,7 @@ def forecast(dow, intersection, direction, int_leg):
     return forecast_df
 
 
+
 # anomalous() detects anomalous datapoints given a new data frame, and produces a graph of the new data along with highlighted anomalies 
 
 def anomalous(dow, intersection, direction, int_leg, new_dataframe, percentile = 95):
@@ -136,10 +134,11 @@ def anomalous(dow, intersection, direction, int_leg, new_dataframe, percentile =
     
     # concatenate and convert to dataframe
     outliers = lower_outliers + upper_outliers
+
     
     if outliers != []:
         outliers = pd.DataFrame(outliers, columns = ['datetime_bin', 'volume', 'forecasted_volume', 'outlier_type', 'squared error']).sort_values(by=['datetime_bin'])
-        print(outliers)
+        print(outliers, len(outliers))
         
         # plot new data with highlighted outliers 
         data_dates = list(new_dataframe['datetime_bin'].apply(lambda d: d.time()))
@@ -157,12 +156,13 @@ def anomalous(dow, intersection, direction, int_leg, new_dataframe, percentile =
             'weight' : 'bold',
             'size'   : 18}
         plt.rc('font', **font)
-        plt.title("Volume Anomalies for %s (%s)" % (intersection, str(new_dataframe['datetime_bin'][0].date())))
+        plt.title("Volume Anomalies for %s (%s, %s Leg, %s)" % (intersection, str(new_dataframe['datetime_bin'][0].date()), int_leg, direction))
         plt.xlabel("Timestamp")
         plt.ylabel("Volume")
         plt.xticks(data_dates[::4], fontsize = 12, rotation = 30)
         plt.tight_layout()
-    
+        plt.show()
+
 
 # trend ()produces a trend plot, with a data cutoff located at the moment new data is introduced to the dataset. Moreover, it highlights trend bounds of historic data.
 # Ideally, the trend of the new data should not veer off from the upper and lower bounds. If the new data does, the trend component is likely deviating significantly 
@@ -205,22 +205,25 @@ def trend(dow, intersection, direction, int_leg, new_dataframe):
     upper_bound = pct[1] + (iqrange * 1.5)
     
     
-    if False in list(lower_bound <= trendvalues[len(data)]) or False in list(upper_bound >= trendvalues[len(data)]):
+    if False in list(lower_bound <= trendvalues[len(data):]) or False in list(upper_bound >= trendvalues[len(data):]):
         # Plot Data With Bounds and data cutoff
+        print(1)
         plt.figure(figsize = (18,10))
         plt.plot(trendvalues, linewidth = 2, color = 'blue', alpha = 0.7, label = 'Trend Volume')
         plt.axvline(x=(56*intervals)-1, c = '#FF00FF', linewidth = 4, alpha = 0.7, linestyle = '--', label = 'New Data Cutoff')
         plt.axhline(lower_bound, alpha = 0.5, color = 'c')
         plt.axhline(upper_bound,  alpha = 0.5, color = 'c')
         plt.axhspan(lower_bound, upper_bound, alpha = 0.1, facecolor = 'c', label = 'Trend Bounds')
-        plt.title("%s Trendline with New Data" % (intersection))
+        plt.title("%s Trendline with New Data (%s Leg, %s)" % (intersection, int_leg, direction))
         plt.ylabel("Volume Trend")
         plt.legend()
+        plt.show()
+
 
 
 # run the script over all distinct combos 
 
-for i in range(1): 
+for i in range(len(newest)): 
     strSQL = '''SELECT extract(dow from datetime_bin) as dow
                 FROM miovision.volumes_15min_new
                 LIMIT 1'''
@@ -255,7 +258,7 @@ for i in range(1):
             trend(dow, intersection, direction, int_leg, new_data)
 
 
-
+con.close() 
 
 
 
