@@ -42,7 +42,7 @@ The days were grouped on an individual day of week group basis, i.e. Fridays wer
 
 The primary package used for for this project was the `forecast` package in R. This package contained the necessary functions used to detect 15 minute single anomalies. It can be found [here](https://cran.r-project.org/web/packages/forecast/index.html).
 
-The `stl` function in R was used to decompose historic data. Info about this function can be found [here](`https://stat.ethz.ch/R-manual/R-devel/library/stats/html/stl.html`). 
+The `stl` function in R was used to decompose historic data. Info about this function can be found [here](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/stl.html). 
 
 Some explanantion of the math underlying choosing appropriate ARIMA models can be found [here](https://people.duke.edu/~rnau/arimrule.htm)
 
