@@ -24,8 +24,6 @@ Prior to implementation, some research and exploratory analysis will be required
 
 The solution was implemented as a two pronged approach. 
 
-The days were grouped on an individual day of week group basis, i.e. Fridays were grouped together, Mondays were grouped together, etc. This is due to the fact that the variance between days is high, and the overall trend behaviour of individual day groups is relatively continuous and constant.  
-
 **1. 15 Minute Single Value Anomaly Detection**
 
    To detect 15 minute individual anomalies, an ARIMA approach was chosen. 
@@ -37,12 +35,19 @@ The days were grouped on an individual day of week group basis, i.e. Fridays wer
   In order to detect overall trend deviations from historic data, STL decomposition was used. In a similar way to 15 minute detection, historical data is retrieved given a combination of attributes. The data is decomposed, and the trend component of the data is isolated. The new data is appended to the historic trend. We detect deviant new trends through the classic Box-Plot outlier detection method, i.e. given a trend point x, x must lie within  
 
   <img src="http://latex.codecogs.com/gif.latex?Q3%20&plus;%201.5*IQR%20%5Cgeq%20x%20%5Cgeq%20Q1%20-%201.5*IQR" /> 
+  
+   To not be considered an anomaly. 
+   
+Note that the days were grouped on an individual day of week group basis, i.e. Fridays were grouped together, Mondays were grouped together, etc. This is due to the fact that the variance between days is high, and the overall trend behaviour of individual day groups is relatively continuous and constant.  
 
 ## Relevant Packages and Documentation 
 
 The primary package used for for this project was the `forecast` package in R. This package contained the necessary functions used to detect 15 minute single anomalies. It can be found [here](https://cran.r-project.org/web/packages/forecast/index.html).
 
 The `stl` function in R was used to decompose historic data. Info about this function can be found [here](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/stl.html). 
+
+The `auto.arima` function in R was used to fit an ARIMA model given historic data. Info about this function can be found [here](https://www.rdocumentation.org/packages/forecast/versions/8.1/topics/auto.arima) 
+
 
 Some explanation of the math underlying appropriate ARIMA model selection can be found [here](https://people.duke.edu/~rnau/arimrule.htm)
 
@@ -55,7 +60,7 @@ Some explanation of the math underlying appropriate ARIMA model selection can be
 * [approaches.ipynb](https://github.com/CityofToronto/bdit_anomalous_counts/blob/master/notebooks/approaches.ipynb) highlights some of the other approaches that could have been taken with this project. 
 
 
-* [adbath_exploratory.ipynb](https://github.com/CityofToronto/bdit_anomalous_counts/blob/master/notebooks/adbath_exploratory.ipynb) and [adbath_daygroup.ipynb](https://github.com/CityofToronto/bdit_anomalous_counts/blob/master/notebooks/adbath_daygroup%20.ipynb) contain very rough exploratory preliminary analyses of Adelaide and Bathurst anomlies. 
+* [adbath_exploratory.ipynb](https://github.com/CityofToronto/bdit_anomalous_counts/blob/master/notebooks/adbath_exploratory.ipynb) and [adbath_daygroup.ipynb](https://github.com/CityofToronto/bdit_anomalous_counts/blob/master/notebooks/adbath_daygroup%20.ipynb) contain very rough exploratory preliminary analyses of Adelaide and Bathurst anomalies. 
 
 
 ## Examples of Anomalies and Trend Deviations
@@ -71,6 +76,10 @@ Here is an example of no trend deviation. You can see that the new data lies wit
 ![png](notebooks/images/anomalies.png)
 
 Here is an example of a valid anomaly. Look at the two data points at 14:00 and 14:15. There is a clear sharp trough at these times. These constitute valid anomalies as they lie outside the lower bound. 
+
+![png](notebooks/images/anomalies2.png)
+
+Here is an nother example of vlaied anomalies, seen from 8:00 AM to 9:00 AM. 
 
 
 # How to use `anomaly_detection.py`
