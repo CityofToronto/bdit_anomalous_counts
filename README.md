@@ -62,6 +62,8 @@ Some explanation of the math underlying appropriate ARIMA model selection can be
 
 ![png](notebooks/images/trendexample1.png)
 
+Here is an example of an evident trend deviation. You can see that after the data cutoff, the trend surpasses the upper bound. 
+
 # How to use `anomaly_detection.py`
 
 1. A `db.cfg` file can be located in this repository's `notebooks` folder. Fill in your credentials in this cfg file and download this file. At the top of `anomaly_detection.py`, substitue the location of your downloaded `db.cfg` file as the input of the `CONFIG.read` function. 
