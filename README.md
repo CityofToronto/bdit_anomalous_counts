@@ -68,6 +68,10 @@ Here is an example of an evident trend deviation. You can see that after the dat
 
 Here is an example of no trend deviation. You can see that the new data lies within the bounds. 
 
+![png](notebooks/images/anomalies.png)
+
+Here is an example of a valid anomaly. Look at the two data points at 14:00 and 14:15. There is a clear sharp trough at these times. These constitute valid anomalies as they lie outside the lower bound. 
+
 
 # How to use `anomaly_detection.py`
 
