@@ -60,7 +60,7 @@ Some explanation of the math underlying appropriate ARIMA model selection can be
 
 ## Examples of Anomalies and Trend Deviations
 
-![png](C:\Users\alouis2\Desktop\trendexample1.png)
+![png](notebooks/images/trendexample1.png)
 
 # How to use `anomaly_detection.py`
 
