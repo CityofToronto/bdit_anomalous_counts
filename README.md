@@ -60,9 +60,14 @@ Some explanation of the math underlying appropriate ARIMA model selection can be
 
 ## Examples of Anomalies and Trend Deviations
 
-![png](notebooks/images/trendexample1.png) 
+![png](notebooks/images/trendexample.png) 
 
-Here is an example of an evident trend deviation. You can see that after the data cutoff, the trend surpasses the upper bound. 
+Here is an example of an evident trend deviation. You can see that after the data cutoff, the trend surpasses the upper bound.
+
+![png](notebooks/images/trendexample2.png)
+
+Here is an example of no trend deviation. You can see that the new data lies within the bounds. 
+
 
 # How to use `anomaly_detection.py`
 
