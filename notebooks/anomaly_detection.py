@@ -22,8 +22,16 @@ ts=robjects.r('ts')
 append = robjects.r('append')
 ro.r('install.packages("forecast")')
 forecast=importr('forecast')
-from rpy2.robjects import pandas2ri
-pandas2ri.activate()
+
+
+class grand_count:
+    def __init__(self, anomaly_graph_count = 0, trend_graph_count = 0,  outliers = 0, trend_devs= 0):
+        self.anomaly_graph_count = anomaly_graph_count
+        self.trend_graph_count = trend_graph_count
+        self.outliers = outliers
+        self.trend_devs = trend_devs
+
+g = grand_count()
 
 # Grab the newest distinct intersection, leg, and direction combinations
 
@@ -36,6 +44,7 @@ def get_new():
                 FROM miovision.volumes_15min_new 
                 INNER JOIN miovision.intersections USING (intersection_uid)
                 WHERE classification_uid IN (1,4,5)
+                AND intersection_name != 'King / Peter'
                 ORDER BY intersection_name, leg, dir'''
     data = pandasql.read_sql(pg.SQL(strSQL), con)
     return data
@@ -78,7 +87,7 @@ def grab(dow, intersection, direction, int_leg):
 
 # forecast() will develop an 24 hour ARIMA forecast given historic data. The forecast will contain 95th percentile bounds that we will use to detect anomalous data
 
-def forecast(dow, intersection, direction, int_leg):
+def forecast(dow, intersection, direction, int_leg, level):
     
     ## forecast: str str str str => pd.Dataframe
     
@@ -91,10 +100,10 @@ def forecast(dow, intersection, direction, int_leg):
     rstring="""function(testdata){
                 library(forecast)
                 fitted_model<-auto.arima(testdata)
-                forecasted_data<-forecast(fitted_model,h=56)
+                forecasted_data<-forecast(fitted_model,h=56, level = %s)
                 outdf<-data.frame(forecasted_data)
                 outdf
-                }"""
+                }""" % (level)
      
     rfunc = robjects.r(rstring)
     r_df = rfunc(rdata)
@@ -106,7 +115,7 @@ def forecast(dow, intersection, direction, int_leg):
 
 # anomalous() detects anomalous datapoints given a new data frame, and produces a graph of the new data along with highlighted anomalies 
 
-def anomalous(dow, intersection, direction, int_leg, new_dataframe, percentile = 95):
+def anomalous(dow, intersection, direction, int_leg, new_dataframe, level):
     
     ## anomoulous: str str str str pd.Dataframe int => str
     
@@ -117,11 +126,11 @@ def anomalous(dow, intersection, direction, int_leg, new_dataframe, percentile =
     ##           percentile: int, either 95 or 80
     
     # get upper and lower bounds according ot percentiles
-    upper = forecast(dow, intersection, direction, int_leg)['Hi.%s' % percentile]
+    upper = forecast(dow, intersection, direction, int_leg, level)['Hi.%s' % level]
     
-    upper = pd.DataFrame(upper).reset_index()['Hi.%s' % percentile] 
-    lower = forecast(dow, intersection, direction, int_leg)['Lo.%s' % percentile]
-    lower = pd.DataFrame(lower).reset_index()['Lo.%s' % percentile] 
+    upper = pd.DataFrame(upper).reset_index()['Hi.%s' % level] 
+    lower = forecast(dow, intersection, direction, int_leg, level)['Lo.%s' % level]
+    lower = pd.DataFrame(lower).reset_index()['Lo.%s' % level] 
     new_volume = new_dataframe['volume']
     
     # create a list of sublists containing outlier index, outlier, forcast, error, outlier type
@@ -134,18 +143,18 @@ def anomalous(dow, intersection, direction, int_leg, new_dataframe, percentile =
     
     # concatenate and convert to dataframe
     outliers = lower_outliers + upper_outliers
-
+    
+    g.outliers += len(outliers)
     
     if outliers != []:
         outliers = pd.DataFrame(outliers, columns = ['datetime_bin', 'volume', 'forecasted_volume', 'outlier_type', 'squared error']).sort_values(by=['datetime_bin'])
-        print(outliers, len(outliers))
-        
+        #if  True in (list(outliers['squared error'] >= 5000)):
+        print(intersection, direction, int_leg, outliers)
         # plot new data with highlighted outliers 
         data_dates = list(new_dataframe['datetime_bin'].apply(lambda d: d.time()))
         data_volumes = list(new_dataframe['volume'])
         out_dates = list(outliers['datetime_bin'].apply(lambda d: d.time()))
         out_volumes = list(outliers['volume'])
-        
         
         plt.figure(figsize = (17,10))
         plt.scatter(out_dates, out_volumes, c = '#FF00FF', s = 150, alpha = 0.7)
@@ -156,19 +165,21 @@ def anomalous(dow, intersection, direction, int_leg, new_dataframe, percentile =
             'weight' : 'bold',
             'size'   : 18}
         plt.rc('font', **font)
-        plt.title("Volume Anomalies for %s (%s, %s Leg, %s)" % (intersection, str(new_dataframe['datetime_bin'][0].date()), int_leg, direction))
+        plt.title("Volume Anomalies for %s, %s Leg, %s" % (intersection, int_leg, direction))
         plt.xlabel("Timestamp")
         plt.ylabel("Volume")
         plt.xticks(data_dates[::4], fontsize = 12, rotation = 30)
         plt.tight_layout()
-        plt.show()
+        g.anomaly_graph_count += 1
+        plt.savefig('anomaly_%s.png' % (g.anomaly_graph_count), dpi = 300) 
+        #plt.show()
 
 
 # trend ()produces a trend plot, with a data cutoff located at the moment new data is introduced to the dataset. Moreover, it highlights trend bounds of historic data.
 # Ideally, the trend of the new data should not veer off from the upper and lower bounds. If the new data does, the trend component is likely deviating significantly 
 # the norm, and the new data should be investigated
 
-def trend(dow, intersection, direction, int_leg, new_dataframe):
+def trend(dow, intersection, direction, int_leg, new_dataframe, iqr_multiplier):
     
     ## trend: str str str str str => matplotlibplot 
     
@@ -201,13 +212,12 @@ def trend(dow, intersection, direction, int_leg, new_dataframe):
     # Create bounds (via scipy.stats.iqr and numpy.percentile)
     pct = [percentile(oldtrend, 25), percentile(oldtrend, 75)] #25th percentile and 75th
     iqrange = (iqr(oldtrend))
-    lower_bound = pct[0] - (iqrange * 1.5)
-    upper_bound = pct[1] + (iqrange * 1.5)
+    lower_bound = pct[0] - (iqrange * iqr_multiplier)
+    upper_bound = pct[1] + (iqrange * iqr_multiplier)
     
     
     if False in list(lower_bound <= trendvalues[len(data):]) or False in list(upper_bound >= trendvalues[len(data):]):
         # Plot Data With Bounds and data cutoff
-        print(1)
         plt.figure(figsize = (18,10))
         plt.plot(trendvalues, linewidth = 2, color = 'blue', alpha = 0.7, label = 'Trend Volume')
         plt.axvline(x=(56*intervals)-1, c = '#FF00FF', linewidth = 4, alpha = 0.7, linestyle = '--', label = 'New Data Cutoff')
@@ -217,13 +227,15 @@ def trend(dow, intersection, direction, int_leg, new_dataframe):
         plt.title("%s Trendline with New Data (%s Leg, %s)" % (intersection, int_leg, direction))
         plt.ylabel("Volume Trend")
         plt.legend()
-        plt.show()
+        g.trend_graph_count += 1 
+        plt.savefig('trend_%s.png' % (g.trend_graph_count), dpi = 300)
+        #plt.show()
 
 
 
 # run the script over all distinct combos 
 
-for i in range(len(newest)): 
+for i in range(150, 152): 
     strSQL = '''SELECT extract(dow from datetime_bin) as dow
                 FROM miovision.volumes_15min_new
                 LIMIT 1'''
@@ -252,14 +264,12 @@ for i in range(len(newest)):
     for j in ['trend', 'anomalous']:
         
         if j == 'anomalous':
-            anomalous(dow, intersection, direction, int_leg, new_data)
+            anomalous(dow, intersection, direction, int_leg, new_data, 95)
         
         elif j == 'trend':
-            trend(dow, intersection, direction, int_leg, new_data)
-
-
-con.close() 
-
+            trend(dow, intersection, direction, int_leg, new_data, 1.5)
+            
+        #print(g.outliers, g.trend_devs)
 
 
 
