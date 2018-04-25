@@ -24,12 +24,12 @@ ro.r('install.packages("forecast")')
 forecast=importr('forecast')
 
 
+# Class grand_count was created for keeping track of outliers detected and trend deviations detected for testing
 class grand_count:
     def __init__(self, anomaly_graph_count = 0, trend_graph_count = 0,  outliers = 0, trend_devs= 0):
-        self.anomaly_graph_count = anomaly_graph_count
-        self.trend_graph_count = trend_graph_count
-        self.outliers = outliers
-        self.trend_devs = trend_devs
+        self.anomaly_graph_count = anomaly_graph_count # number of anomaly graphs produced
+        self.trend_graph_count = trend_graph_count # number of trend graphs produced
+        self.outliers = outliers # total number of anomalies detected
 
 g = grand_count()
 
@@ -148,7 +148,6 @@ def anomalous(dow, intersection, direction, int_leg, new_dataframe, level):
     
     if outliers != []:
         outliers = pd.DataFrame(outliers, columns = ['datetime_bin', 'volume', 'forecasted_volume', 'outlier_type', 'squared error']).sort_values(by=['datetime_bin'])
-        #if  True in (list(outliers['squared error'] >= 5000)):
         print(intersection, direction, int_leg, outliers)
         # plot new data with highlighted outliers 
         data_dates = list(new_dataframe['datetime_bin'].apply(lambda d: d.time()))
@@ -172,7 +171,6 @@ def anomalous(dow, intersection, direction, int_leg, new_dataframe, level):
         plt.tight_layout()
         g.anomaly_graph_count += 1
         plt.savefig('anomaly_%s.png' % (g.anomaly_graph_count), dpi = 300) 
-        #plt.show()
 
 
 # trend ()produces a trend plot, with a data cutoff located at the moment new data is introduced to the dataset. Moreover, it highlights trend bounds of historic data.
@@ -229,7 +227,6 @@ def trend(dow, intersection, direction, int_leg, new_dataframe, iqr_multiplier):
         plt.legend()
         g.trend_graph_count += 1 
         plt.savefig('trend_%s.png' % (g.trend_graph_count), dpi = 300)
-        #plt.show()
 
 
 
@@ -269,8 +266,10 @@ for i in range(150, 152):
         elif j == 'trend':
             trend(dow, intersection, direction, int_leg, new_data, 1.5)
             
-        #print(g.outliers, g.trend_devs)
-
+            
+            
+con.close() 
+            
 
 
 
