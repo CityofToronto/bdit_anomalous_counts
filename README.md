@@ -60,7 +60,7 @@ Some explanation of the math underlying appropriate ARIMA model selection can be
 
 ## Examples of Anomalies and Trend Deviations
 
-![png](notebooks/images/trendexample1.png)
+![png](notebooks/images/trendexample1.png) 
 
 Here is an example of an evident trend deviation. You can see that after the data cutoff, the trend surpasses the upper bound. 
 
