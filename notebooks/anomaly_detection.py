@@ -14,7 +14,7 @@ from os.path import expanduser
 import os.path
 
 
-database_path = 'C:\Users\alouis2\Documents\Python Scripts\db.cfg'
+database_path = 'C:\\Users\\alouis2\\Documents\\Python Scripts\\db.cfg'
 
 # Class to keep count of trend deviations, and number of graphs produced. Class also has spreadsheet class that will convert to csv 
 class grand_count:
@@ -195,6 +195,8 @@ def anomalous(dow, intersection, direction, int_leg, new_dataframe, level):
         outliers = pd.DataFrame(outliers, columns = ['datetime_bin','intersection_name', 'leg', 'dir',  'volume', 'forecasted_volume', 'outlier_type', 'squared error'])
         g.spreadsheet = g.spreadsheet.append(outliers)
         
+        outliers = pd.DataFrame(outliers, columns = ['datetime_bin', 'volume', 'forecasted_volume', 'outlier_type', 'squared error']).sort_values(by=['datetime_bin'])
+
         # plot new data with highlighted outliers 
         data_dates = list(new_dataframe['datetime_bin'].apply(lambda d: d.time()))
         data_volumes = list(new_dataframe['volume'])
@@ -214,6 +216,8 @@ def anomalous(dow, intersection, direction, int_leg, new_dataframe, level):
         plt.tight_layout()
         g.anomaly_graph_count += 1
         plt.savefig(path + '\\anomaly_%s.png' % (g.anomaly_graph_count), dpi = 300) 
+
+        plt.savefig('anomaly_%s.png' % (g.anomaly_graph_count), dpi = 300) 
 
 
 # trend ()produces a trend plot, with a data cutoff located at the moment new data is introduced to the dataset. Moreover, it highlights trend bounds of historic data.
@@ -274,13 +278,15 @@ def trend(dow, intersection, direction, int_leg, new_dataframe, iqr_multiplier):
         g.trend_graph_count += 1 
         plt.savefig(path + '\\trend_%s.png' % (g.trend_graph_count), dpi = 300)
 
+        plt.savefig('trend_%s.png' % (g.trend_graph_count), dpi = 300)
+
         
 
 def main(): 
     
     # run functions over all attribute combos
     
-    for i in range(0, len(new_data)): 
+    for i in range(0, 10): 
         strSQL = '''SELECT extract(dow from datetime_bin) as dow
                     FROM miovision.volumes_15min_new
                     LIMIT 1'''
@@ -350,7 +356,8 @@ def main():
     g.spreadsheet = g.spreadsheet.sort_values(by = ['intersection_name', 'datetime_bin'])
     g.spreadsheet.to_csv(os.path.join(path, r'found_anomalies.csv'))
     
-
+    con.close() 
+            
 if __name__ == '__main__':
     main() 
 

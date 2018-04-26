@@ -79,7 +79,12 @@ Here is an example of a valid anomaly. Look at the two data points at 14:00 and 
 
 ![png](notebooks/images/anomalies2.png)
 
-Here is an nother example of vlaied anomalies, seen from 8:00 AM to 9:00 AM. 
+Here is another example of valid anomalies, seen from 8:00 AM to 9:00 AM. 
+
+![png](notebooks/images/anomalies3.png) 
+
+Here is an example of no anomalies. The new data sits within the prediction bounds.
+
 
 
 # How to use `anomaly_detection.py`
