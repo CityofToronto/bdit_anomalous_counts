@@ -45,12 +45,21 @@ font = {'family' : 'normal',
         'size'   : 18}
 
 
+<<<<<<< HEAD
 # Creat Anomalies Folder for user
 home = expanduser("~")
 path = home + '\\Documents'
 if not os.path.exists(path + '\\found_anomalies'):
     os.makedirs(path + '\\found_anomalies')
 path += '\\found_anomalies'
+=======
+# Class grand_count was created for keeping track of outliers detected and trend deviations detected for testing
+class grand_count:
+    def __init__(self, anomaly_graph_count = 0, trend_graph_count = 0,  outliers = 0, trend_devs= 0):
+        self.anomaly_graph_count = anomaly_graph_count # number of anomaly graphs produced
+        self.trend_graph_count = trend_graph_count # number of trend graphs produced
+        self.outliers = outliers # total number of anomalies detected
+>>>>>>> origin/master
 
 
 # Grab the newest distinct intersection, leg, and direction combinations
@@ -196,7 +205,11 @@ def anomalous(dow, intersection, direction, int_leg, new_dataframe, level):
         g.spreadsheet = g.spreadsheet.append(outliers)
         
         outliers = pd.DataFrame(outliers, columns = ['datetime_bin', 'volume', 'forecasted_volume', 'outlier_type', 'squared error']).sort_values(by=['datetime_bin'])
+<<<<<<< HEAD
 
+=======
+        print(intersection, direction, int_leg, outliers)
+>>>>>>> origin/master
         # plot new data with highlighted outliers 
         data_dates = list(new_dataframe['datetime_bin'].apply(lambda d: d.time()))
         data_volumes = list(new_dataframe['volume'])
@@ -276,7 +289,12 @@ def trend(dow, intersection, direction, int_leg, new_dataframe, iqr_multiplier):
         plt.ylabel("Volume Trend")
         plt.legend()
         g.trend_graph_count += 1 
+<<<<<<< HEAD
         plt.savefig(path + '\\trend_%s.png' % (g.trend_graph_count), dpi = 300)
+=======
+        plt.savefig('trend_%s.png' % (g.trend_graph_count), dpi = 300)
+
+>>>>>>> origin/master
 
         plt.savefig('trend_%s.png' % (g.trend_graph_count), dpi = 300)
 
@@ -345,6 +363,7 @@ def main():
         
         for j in ['trend', 'anomalous']:
             
+<<<<<<< HEAD
             if j == 'anomalous':
                 anomalous(dow, intersection, direction, int_leg, new_data, 99.5)
             
@@ -360,6 +379,17 @@ def main():
             
 if __name__ == '__main__':
     main() 
+=======
+            
+            
+con.close() 
+            
+
+
+
+
+
+>>>>>>> origin/master
 
 
 
