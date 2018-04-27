@@ -72,28 +72,23 @@ Here is an example of no trend deviation. You can see that the new data lies wit
 
 ![png](notebooks/images/anomaly_2.png)
 
-Here is an example of a valid anomaly. Look at the two data points at 14:00 and 14:15. There is a clear sharp trough at these times. These constitute valid anomalies as they lie outside the lower bound. 
+Here is an example of a valid anomaly. Look at the data point at 14:00. There is a clear sharp trough at this time. These constitute valid anomalies as they lie outside the lower bound. 
 
 
 # How to use `anomaly_detection.py`
 
-1. A `db.cfg` file can be located in this repository's `notebooks` folder. Fill in your credentials in this cfg file and download this file. At the top of `anomaly_detection.py`, substitue the location of your downloaded `db.cfg` file as the input of the `CONFIG.read` function. 
+1. A `db.cfg` file can be located in this repository's `notebooks` folder. Fill in your credentials in this cfg file and download this file. At the top of `anomaly_detection.py`, there is a variable called `database_path`. Assign the location of your `db.cfg` file to this variable.
 
 2. If you wish to change the bounds of 15 minute anomaly detection:
 
-      i. Proceed to the end of the file, within the `for` loop. 
+      i. At the top of the file, there is a variable called `anomaly_percentile`. This is one of the variables passed in the `anomalous` function. This function accepts this variable as its last parameter. This value is a percentage prediction interval region for the ARIMA/ETS forecast. 
       
-      ii. The function `anomalous` accepts a percentile value as its last parameter. This value is a percentage prediction interval region for the ARIMA/ETS forecast. 
-      
-      iii. The value is currently set at `98` %. Change this value to your preference. The default value in R is `95`. 
+     ii. The value is currently set at `99` %. Change this value to your preference. The default value in R is `95`. 
 
 3. If you wish to change the bounds of trend deviation detection:
 
-      i. Proceed to the end of the file, within the `for` loop. 
+      i. At the top of the file, there is another variable called `IQR_multiplier`. This is one of the variables passed in the `trend` function. This function accepts this variable as its last parameter, which is the multiplicative IQR factor that determines the upper and lower bounds for trend deviation. These boundas are calculated through the classical box plot method of outlier detection. 
       
-      ii. The function `trend` accepts a numeric value as its last parameter, which is the multiplicative IQR factor that determines the upper and lower bounds for trend deviation. The spread is calculated through the classical box plot method of outlier detection. 
-      
-    iii. The default is `2`. The larger the value, the greater the bounds. In traditional statistical outlier detection, this value is 1.5 Change this value to your preference. 
+     ii. The default in this script is set to `1.5`. The larger the value, the greater the bounds. In traditional statistical outlier detection, this value is 1.5. Change this value to your preference. 
 
-4. Run `anomaly_detection.py` from your command line. 
-
+4. Run `anomaly_detection.py` from your command line. You will have a folder called `found_anomalies` in your Documents folder. In this folder, all graphs containing trend deviations and anomalies will appear, in addition to a CSV containing all 15 minute anomalies. The anomaly graphs are labeled as `anomaly_X.png`, and trend gaphs are labeled as `trend_X.png`. 
