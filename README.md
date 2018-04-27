@@ -90,5 +90,9 @@ Here is an example of a valid anomaly. Look at the data point at 14:00. There is
       i. At the top of the file, there is another variable called `IQR_multiplier`. This is one of the variables passed in the `trend` function. This function accepts this variable as its last parameter, which is the multiplicative IQR factor that determines the upper and lower bounds for trend deviation. These boundas are calculated through the classical box plot method of outlier detection. 
       
      ii. The default in this script is set to `1.5`. The larger the value, the greater the bounds. In traditional statistical outlier detection, this value is 1.5. Change this value to your preference. 
+     
+4. If you wish to see the total number of outliers produced:
 
-4. Run `anomaly_detection.py` from your command line. You will have a folder called `found_anomalies` in your Documents folder. In this folder, all graphs containing trend deviations and anomalies will appear, in addition to a CSV containing all 15 minute anomalies. The anomaly graphs are labeled as `anomaly_X.png`, and trend gaphs are labeled as `trend_X.png`. 
+      i. Call `g.outliers` from the command line. `g` is a `grand_count` object which keeps track of the number of outliers calculated, whether they are trend deviations or individual 15 minute anomalies. It also keeps track of the number of anomaly graphs and trend graphs produced, which can be accessed through calling `g.anomaly_graph_count` or `g.trend_graph_count` respectively. 
+
+5. Run `anomaly_detection.py` from your command line. You will have a folder called `found_anomalies` in your Documents folder. In this folder, all graphs containing trend deviations and anomalies will appear, in addition to a CSV containing all 15 minute anomalies. The anomaly graphs are labeled as `anomaly_X.png`, and trend gaphs are labeled as `trend_X.png`. 
