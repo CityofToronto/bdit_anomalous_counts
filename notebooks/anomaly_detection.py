@@ -39,7 +39,9 @@ class grand_count:
         self.trend_graph_count = trend_graph_count # Int
         self.outliers = outliers # Int
         
+        
 g = grand_count()
+
 
 # Import relevant R functions 
 ts=robjects.r('ts')
@@ -60,7 +62,6 @@ font = {'family' : 'normal',
         'size'   : 18}
 
 
-
 # Creat Anomalies Folder for user
 home = expanduser("~")
 path = home + '\\Documents'
@@ -74,6 +75,9 @@ class grand_count:
         self.anomaly_graph_count = anomaly_graph_count # number of anomaly graphs produced
         self.trend_graph_count = trend_graph_count # number of trend graphs produced
         self.outliers = outliers # total number of anomalies detected
+
+
+
 
 
 # Grab the newest distinct intersection, leg, and direction combinations
@@ -93,6 +97,9 @@ def get_new():
     return data
 
 newest = get_new()
+
+
+
 
 
 # We will use grab() to grab a relevant dataframe given user inputs
@@ -146,6 +153,10 @@ def grab(dow, intersection, direction, int_leg):
             
     return pandasql.read_sql(pg.SQL(strSQL), con)
 
+
+
+
+
 # forecast() will develop an 24 hour forecast given historic data. This may or may not be an ARIMA forecast.
 # The forecast will contain 95th percentile bounds that we will use to detect anomalous data
 
@@ -175,6 +186,8 @@ def forecast(dow, intersection, direction, int_leg, level):
 
 
 
+
+
 # anomalous() detects anomalous datapoints given a new data frame, and produces a graph of the new data along with highlighted anomalies 
 
 def anomalous(dow, intersection, direction, int_leg, new_dataframe, level):
@@ -188,6 +201,7 @@ def anomalous(dow, intersection, direction, int_leg, new_dataframe, level):
     ##           percentile: int, either 95 or 80
     
     # get upper and lower bounds according ot percentiles
+    
     upper = forecast(dow, intersection, direction, int_leg, level)['Hi.%s' % level]
     
     upper = pd.DataFrame(upper).reset_index()['Hi.%s' % level] 
@@ -196,6 +210,7 @@ def anomalous(dow, intersection, direction, int_leg, new_dataframe, level):
     new_volume = new_dataframe['volume']
     
     # create a list of sublists containing outlier, forcast, error, outlier type
+    
     upper_outliers = [[list(new_volume-upper).index(i), new_dataframe['volume'][list(new_volume-upper).index(i)], list(upper)[list(new_volume-upper).index(i)], 'upper', i*i] for i in list(new_volume-upper) if i > 0]
     lower_outliers = [[list(new_volume-lower).index(i),  new_dataframe['volume'][list(new_volume-lower).index(i)], list(lower)[list(new_volume-lower).index(i)], 'lower', i*i] for i in list(new_volume-lower) if i < 0]
     for sublist in lower_outliers:
@@ -205,6 +220,7 @@ def anomalous(dow, intersection, direction, int_leg, new_dataframe, level):
 
     
     # concatenate and convert to dataframe
+    
     outliers = lower_outliers + upper_outliers
 
     
@@ -221,6 +237,7 @@ def anomalous(dow, intersection, direction, int_leg, new_dataframe, level):
         outliers = pd.DataFrame(outliers, columns = ['datetime_bin', 'volume', 'forecasted_volume', 'outlier_type', 'squared error']).sort_values(by=['datetime_bin'])
 
         # plot new data with highlighted outliers 
+        
         data_dates = list(new_dataframe['datetime_bin'].apply(lambda d: d.time()))
         data_volumes = list(new_dataframe['volume'])
         out_dates = list(outliers['datetime_bin'].apply(lambda d: d.time()))
@@ -243,6 +260,9 @@ def anomalous(dow, intersection, direction, int_leg, new_dataframe, level):
 
 
 
+
+
+
 # trend ()produces a trend plot, with a data cutoff located at the moment new data is introduced to the dataset. Moreover, it highlights trend bounds of historic data.
 # Ideally, the trend of the new data should not veer off from the upper and lower bounds. If the new data does, the trend component is likely deviating significantly 
 # the norm, and the new data should be investigated
@@ -257,11 +277,14 @@ def trend(dow, intersection, direction, int_leg, new_dataframe, iqr_multiplier):
     ##                          the grab function
     
     # grab data
+    
     data = grab(dow, intersection, direction, int_leg)
     data['datetime_bin'] = pd.to_datetime(data['datetime_bin'])
     intervals = len(data.groupby(data['datetime_bin'].dt.strftime('%d')).count()['datetime_bin']) #number of periods
     
     rdata = ts(append(data.volume.values, new_dataframe.volume.values), frequency = 96)
+    
+    # decompose
     
     rstring="""function(testdata){
                 library(forecast)
@@ -278,11 +301,14 @@ def trend(dow, intersection, direction, int_leg, new_dataframe, iqr_multiplier):
     oldtrend = trendvalues[0:len(data)-1] #old data
     
     # Create bounds (via scipy.stats.iqr and numpy.percentile)
+    
     pct = [percentile(oldtrend, 25), percentile(oldtrend, 75)]  #25th percentile and 75th
     iqrange = (iqr(oldtrend))
     lower_bound = pct[0] - (iqrange * iqr_multiplier)
     upper_bound = pct[1] + (iqrange * iqr_multiplier)
     
+    
+    # if more than a quarter of the new data sits outside the bounds, do the following: 
     
     if list(lower_bound <= trendvalues[len(data):]).count(False) >= 0.25*len(new_dataframe) or list(upper_bound >= trendvalues[len(data):]).count(False) >= 0.25*len(new_dataframe):
         
@@ -291,19 +317,24 @@ def trend(dow, intersection, direction, int_leg, new_dataframe, iqr_multiplier):
         plt.ioff()
         plt.figure(figsize = (18,10))
         plt.plot(trendvalues, linewidth = 2, color = 'blue', alpha = 0.7, label = 'Trend Volume')
-        plt.axvline(x=(96*intervals)-1, c = '#FF00FF', linewidth = 4, alpha = 0.7, linestyle = '--', label = 'New Data Cutoff')
-        plt.axhline(lower_bound, alpha = 0.5, color = 'c')
-        plt.axhline(upper_bound,  alpha = 0.5, color = 'c')
-        plt.axhspan(lower_bound, upper_bound, alpha = 0.1, facecolor = 'c', label = 'Trend Bounds')
+
+        plt.axvline(x=(96*intervals)-1, c = '#FF00FF', linewidth = 4, alpha = 0.7, linestyle = '--', label = 'New Data Cutoff') # data cut off point
+        plt.axhline(lower_bound, alpha = 0.5, color = 'c') #lower bound
+        plt.axhline(upper_bound,  alpha = 0.5, color = 'c') #upper bound
+        plt.axhspan(lower_bound, upper_bound, alpha = 0.1, facecolor = 'c', label = 'Trend Bounds') #spread
         plt.title("%s Trendline with New Data (%s Leg, %s)" % (intersection, int_leg, direction))
         plt.rc('font', **font)
         plt.ylabel("Volume Trend")
         plt.legend()
-        g.trend_graph_count += 1 
+        g.trend_graph_count += 1  #update graph count
         
         plt.savefig(path + '\\trend_%s.png' % (g.trend_graph_count), dpi = 300)
 
         
+
+
+# main script 
+
 
 def main(): 
     
@@ -314,6 +345,8 @@ def main():
                     FROM miovision.volumes_15min_new
                     LIMIT 1'''
         
+        # grab attributes
+        
         dow = int(pandasql.read_sql(pg.SQL(strSQL), con)['dow'].values[0])
         
         intersection = newest['intersection_name'].values[i]
@@ -321,6 +354,8 @@ def main():
         direction = newest['dir'].values[i]
         
         int_leg = newest['leg'].values[i]
+        
+        # query to grab new data
         
         strSQL = '''WITH ts as (WITH complete as 
     
@@ -374,7 +409,7 @@ def main():
             elif j == 'trend':
                 trend(dow, intersection, direction, int_leg, new_data, IQR_multiplier)
                 
-    
+    # produce csv 
     g.spreadsheet = g.spreadsheet.reset_index()
     g.spreadsheet = g.spreadsheet.sort_values(by = ['intersection_name', 'datetime_bin'])
     g.spreadsheet.to_csv(os.path.join(path, r'found_anomalies.csv'))
