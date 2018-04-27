@@ -14,7 +14,22 @@ from os.path import expanduser
 import os.path
 
 
+
+
+######################################################################################################################
+
+
 database_path = 'C:\\Users\\alouis2\\Documents\\Python Scripts\\db.cfg'
+
+anomaly_percentile = 99
+
+IQR_multiplier = 1.5
+
+
+######################################################################################################################
+
+
+
 
 # Class to keep count of trend deviations, and number of graphs produced. Class also has spreadsheet class that will convert to csv 
 class grand_count:
@@ -294,7 +309,7 @@ def main():
     
     # run functions over all attribute combos
     
-    for i in range(0, len(newest)): 
+    for i in range(120, 130): 
         strSQL = '''SELECT extract(dow from datetime_bin) as dow
                     FROM miovision.volumes_15min_new
                     LIMIT 1'''
@@ -354,10 +369,10 @@ def main():
         for j in ['trend', 'anomalous']:
             
             if j == 'anomalous':
-                anomalous(dow, intersection, direction, int_leg, new_data, 99.5)
+                anomalous(dow, intersection, direction, int_leg, new_data, anomaly_percentile)
             
             elif j == 'trend':
-                trend(dow, intersection, direction, int_leg, new_data, 1.5)
+                trend(dow, intersection, direction, int_leg, new_data, IQR_multiplier)
                 
     
     g.spreadsheet = g.spreadsheet.reset_index()
@@ -369,10 +384,7 @@ def main():
 if __name__ == '__main__':
     main() 
 
-            
-            
-con.close() 
-            
+
 
 
 
