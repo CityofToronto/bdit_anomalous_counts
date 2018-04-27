@@ -226,36 +226,36 @@ def anomalous(dow, intersection, direction, int_leg, new_dataframe, level):
     
     g.outliers += len(outliers)
     
-    if outliers != []:
+    #if outliers != []:
         
         # append outliers to dataframe
         
-        outliers = [[i[0]] + [intersection, int_leg, direction] + i[1:] for i in outliers]
-        outliers = pd.DataFrame(outliers, columns = ['datetime_bin','intersection_name', 'leg', 'dir',  'volume', 'forecasted_volume', 'outlier_type', 'squared error'])
-        g.spreadsheet = g.spreadsheet.append(outliers)
-        
-        outliers = pd.DataFrame(outliers, columns = ['datetime_bin', 'volume', 'forecasted_volume', 'outlier_type', 'squared error']).sort_values(by=['datetime_bin'])
+    outliers = [[i[0]] + [intersection, int_leg, direction] + i[1:] for i in outliers]
+    outliers = pd.DataFrame(outliers, columns = ['datetime_bin','intersection_name', 'leg', 'dir',  'volume', 'forecasted_volume', 'outlier_type', 'squared error'])
+    g.spreadsheet = g.spreadsheet.append(outliers)
+    
+    outliers = pd.DataFrame(outliers, columns = ['datetime_bin', 'volume', 'forecasted_volume', 'outlier_type', 'squared error']).sort_values(by=['datetime_bin'])
 
-        # plot new data with highlighted outliers 
-        
-        data_dates = list(new_dataframe['datetime_bin'].apply(lambda d: d.time()))
-        data_volumes = list(new_dataframe['volume'])
-        out_dates = list(outliers['datetime_bin'].apply(lambda d: d.time()))
-        out_volumes = list(outliers['volume'])
-        plt.ioff()
-        plt.figure(figsize = (17,10))
-        plt.scatter(out_dates, out_volumes, c = '#FF00FF', s = 150, alpha = 0.7)
-        plt.plot(data_dates, data_volumes, c= 'blue', linewidth = 2.5, alpha = 0.7)
-        plt.plot(data_dates, upper, data_dates, lower, c = 'c', alpha = 0.1)
-        plt.fill_between(data_dates, lower, upper, facecolor = 'c', alpha = 0.1)
-        plt.rc('font', **font)
-        plt.title("Volume Anomalies for %s, %s Leg, %s" % (intersection, int_leg, direction))
-        plt.xlabel("Timestamp")
-        plt.ylabel("Volume")
-        plt.xticks(data_dates[::4], fontsize = 12, rotation = 30)
-        plt.tight_layout()
-        g.anomaly_graph_count += 1
-        plt.savefig(path + '\\anomaly_%s.png' % (g.anomaly_graph_count), dpi = 300) 
+    # plot new data with highlighted outliers 
+    
+    data_dates = list(new_dataframe['datetime_bin'].apply(lambda d: d.time()))
+    data_volumes = list(new_dataframe['volume'])
+    out_dates = list(outliers['datetime_bin'].apply(lambda d: d.time()))
+    out_volumes = list(outliers['volume'])
+    plt.ioff()
+    plt.figure(figsize = (17,10))
+    plt.scatter(out_dates, out_volumes, c = '#FF00FF', s = 150, alpha = 0.7)
+    plt.plot(data_dates, data_volumes, c= 'blue', linewidth = 2.5, alpha = 0.7)
+    plt.plot(data_dates, upper, data_dates, lower, c = 'c', alpha = 0.1)
+    plt.fill_between(data_dates, lower, upper, facecolor = 'c', alpha = 0.1)
+    plt.rc('font', **font)
+    plt.title("Volume Anomalies for %s, %s Leg, %s" % (intersection, int_leg, direction))
+    plt.xlabel("Timestamp")
+    plt.ylabel("Volume")
+    plt.xticks(data_dates[::4], fontsize = 12, rotation = 30)
+    plt.tight_layout()
+    g.anomaly_graph_count += 1
+    plt.savefig(path + '\\anomaly_%s.png' % (g.anomaly_graph_count), dpi = 300) 
 
 
 
@@ -340,7 +340,7 @@ def main():
     
     # run functions over all attribute combos
     
-    for i in range(120, 130): 
+    for i in range(0, len(newest)): 
         strSQL = '''SELECT extract(dow from datetime_bin) as dow
                     FROM miovision.volumes_15min_new
                     LIMIT 1'''
@@ -407,7 +407,7 @@ def main():
                 anomalous(dow, intersection, direction, int_leg, new_data, anomaly_percentile)
             
             elif j == 'trend':
-                trend(dow, intersection, direction, int_leg, new_data, IQR_multiplier)
+                pass #trend(dow, intersection, direction, int_leg, new_data, IQR_multiplier)
                 
     # produce csv 
     g.spreadsheet = g.spreadsheet.reset_index()
