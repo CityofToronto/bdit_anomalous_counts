@@ -32,7 +32,7 @@ The solution was implemented as a two pronged approach.
 
 **2. Trend Deviation Detection** 
 
-  In order to detect overall trend deviations from historic data, STL decomposition was used. In a similar way to 15 minute detection, historical data is retrieved given a combination of attributes. The data is decomposed, and the trend component of the data is isolated. The new data is appended to the historic trend. We detect deviant new trends through the classic Box-Plot outlier detection method, i.e. given a new trend point x, x must lie within  
+  In order to detect overall trend deviations from historic data, STL decomposition was used. In a similar way to 15 minute detection, historical data is retrieved given a combination of attributes. The data is decomposed, and the trend component of the data is isolated. The new data is appended to the historic trend. We detect deviant new trends through the classic Box-Plot outlier detection method, i.e. given new data points, less than a quarter of the new data points must sit within the following range 
 
   <img src="http://latex.codecogs.com/gif.latex?Q3%20&plus;%201.5*IQR%20%5Cgeq%20x%20%5Cgeq%20Q1%20-%201.5*IQR" /> 
   
