@@ -26,9 +26,9 @@ The solution was implemented as a two pronged approach.
 
 **1. 15 Minute Single Value Anomaly Detection**
 
-   To detect 15 minute individual anomalies, an ARIMA approach was chosen. 
+   To detect 15 minute individual anomalies, an foreacsting prediction error approach was chosen. 
 
-   Essentially, given new data with a particular day of week, intersection, direction, and leg combination, all historical data with the same attributes are retrieved from miovision schema. An appropriate ARIMA model is fitted to this data. A 24 hour prediction interval of historic data is conseqeuntly produced, and if the new data lays outside this prediction interval, it is flagged. 
+   Essentially, given new data with a particular day of week, intersection, direction, and leg combination, all historical data with the same attributes are retrieved from miovision schema. An appropriate forecasting model is fitted to this data, either STL ETS (Error, Trend Seasonality Model) or an ARIMA model. R selects either of these models based on its own parameters. Generally speaking, ETS is much more flexible. A 24 hour prediction interval of historic data is conseqeuntly produced, and if the new data lays outside this prediction interval, it is flagged. 
 
 **2. Trend Deviation Detection** 
 
@@ -45,9 +45,6 @@ Note that the days were grouped on an individual day of week group basis, i.e. F
 The primary package used for for this project was the `forecast` package in R. This package contained the necessary functions used to detect 15 minute single anomalies. It can be found [here](https://cran.r-project.org/web/packages/forecast/index.html).
 
 The `stl` function in R was used to decompose historic data. Info about this function can be found [here](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/stl.html). 
-
-The `auto.arima` function in R was used to fit an ARIMA model given historic data. Info about this function can be found [here](https://www.rdocumentation.org/packages/forecast/versions/8.1/topics/auto.arima) 
-
 
 Some explanation of the math underlying appropriate ARIMA model selection can be found [here](https://people.duke.edu/~rnau/arimrule.htm)
 
@@ -95,7 +92,7 @@ Here is an example of no anomalies. The new data sits within the prediction boun
 
       i. Proceed to the end of the file, within the `for` loop. 
       
-      ii. The function `anomalous` accepts a percentile value as its last parameter. This value is a percentage prediction interval region for the ARIMA forecast. 
+      ii. The function `anomalous` accepts a percentile value as its last parameter. This value is a percentage prediction interval region for the ARIMA/ETS forecast. 
       
       iii. The value is currently set at `98` %. Change this value to your preference. The default value in R is `95`. 
 
