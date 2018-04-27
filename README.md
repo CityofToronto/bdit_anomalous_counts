@@ -26,13 +26,13 @@ The solution was implemented as a two pronged approach.
 
 **1. 15 Minute Single Value Anomaly Detection**
 
-   To detect 15 minute individual anomalies, an foreacsting prediction error approach was chosen. 
+   To detect 15 minute individual anomalies, an forecasting prediction error approach was chosen. 
 
-   Essentially, given new data with a particular day of week, intersection, direction, and leg combination, all historical data with the same attributes are retrieved from miovision schema. An appropriate forecasting model is fitted to this data, either STL ETS (Error, Trend Seasonality Model) or an ARIMA model. R selects either of these models based on its own parameters. Generally speaking, ETS is much more flexible. A 24 hour prediction interval of historic data is conseqeuntly produced, and if the new data lays outside this prediction interval, it is flagged. 
+   Essentially, given new data with a particular day of week, intersection, direction, and leg combination, all historical data with the same attributes are retrieved from the `miovision` schema. An appropriate forecasting model is fitted to this data, either STL ETS (Error, Trend Seasonality Model) or an ARIMA model. R selects either of these models based on its own parameters. Generally speaking, ETS is much more flexible. A 24 hour prediction interval of historic data is conseqeuntly produced, and if the new data lays outside this prediction interval, it is flagged. 
 
 **2. Trend Deviation Detection** 
 
-  In order to detect overall trend deviations from historic data, STL decomposition was used. In a similar way to 15 minute detection, historical data is retrieved given a combination of attributes. The data is decomposed, and the trend component of the data is isolated. The new data is appended to the historic trend. We detect deviant new trends through the classic Box-Plot outlier detection method, i.e. given a trend point x, x must lie within  
+  In order to detect overall trend deviations from historic data, STL decomposition was used. In a similar way to 15 minute detection, historical data is retrieved given a combination of attributes. The data is decomposed, and the trend component of the data is isolated. The new data is appended to the historic trend. We detect deviant new trends through the classic Box-Plot outlier detection method, i.e. given a new trend point x, x must lie within  
 
   <img src="http://latex.codecogs.com/gif.latex?Q3%20&plus;%201.5*IQR%20%5Cgeq%20x%20%5Cgeq%20Q1%20-%201.5*IQR" /> 
   
@@ -52,7 +52,7 @@ Some explanation of the math underlying appropriate ARIMA model selection can be
 
 * [anomaly_detection.py](https://github.com/CityofToronto/bdit_anomalous_counts/blob/master/notebooks/anomaly_detection.py) is the primary script used for anomaly detection.
 
-* [anomaly_detection_analysis.ipynb](https://github.com/CityofToronto/bdit_anomalous_counts/blob/master/notebooks/anomaly_detection_analysis.ipynb) contains the exploratory analysis that led to the development of relevation functions in the `anomaly_detection.py` script. Moreover, it contains some of the motivation behind the intution and mathematics of the functions developed. 
+* [anomaly_detection_analysis.ipynb](https://github.com/CityofToronto/bdit_anomalous_counts/blob/master/notebooks/anomaly_detection_analysis.ipynb) contains the exploratory analysis that led to the development of relevant functions in the `anomaly_detection.py` script. Moreover, it contains some of the motivation behind the intution and mathematics of the functions developed. 
 
 * [approaches.ipynb](https://github.com/CityofToronto/bdit_anomalous_counts/blob/master/notebooks/approaches.ipynb) highlights some of the other approaches that could have been taken with this project. 
 
